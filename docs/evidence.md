@@ -36,4 +36,8 @@
 - Application commit: `92dcd5c5352b92d4ee65fd83e636c01c3dc251fe`. A subsequent documentation-only commit records its ID and these results.
 - A separate clean local clone passed fresh `npm ci`, production build, and all 4 backend tests. Its server started on a separate port, automatically initialized a separate SQLite database, served the built frontend with HTTP 200, and returned a valid AAPL WebSocket snapshot. Git status remained clean after these operations.
 - Backend checks used the already installed Python environment; a fresh Python environment was not reinstalled. This clean-checkout startup check did not establish a new live-provider observation. Earlier live-provider results are documented separately.
-- Remaining submission work: instructor access to the private repository and a real accessible demonstration video link.
+- At publication, remaining submission work included instructor access to the private repository and a real accessible demonstration video link.
+
+## Public repository access — November 9, 2026
+
+- The user requested making the repository public. Its visibility was changed to public, and an unauthenticated GitHub API request verified access. README and report access instructions were updated. The demonstration video link remains outstanding.
