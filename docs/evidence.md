@@ -29,3 +29,11 @@
 - Verification: production build and all 4 backend checks passed. The updated default Chromium check passed, exercising unavailable state, replay, symbol switching, watchlist search/click, chart fit, and 390px width. Real-data screenshots at 1440px and 390px were visually inspected; the mobile page had no horizontal overflow. Local screenshots are in `frontend/test-results/redesign-desktop.png` and `redesign-mobile.png` (generated, excluded from Git).
 - Limitations: four supported instruments remain; charts reflect data recorded since local collection began. Percent changes are labeled as recorded-period changes. The watchlist remains live while the main chart replays.
 - Final live-provider rerun: both Chromium checks passed with `LIVE_TEST=1`; Yahoo status was connected. The first rerun exposed an outdated exact-text selector after the mode label gained adjacent interval metadata. The check now targets the chart footer and verifies its mode text; the application behavior required no change. Test screenshots are ephemeral and may be replaced by later Playwright runs.
+
+## GitHub publication and clean checkout — November 9, 2026
+
+- Request: “do the github for me.” Repository: `kuanenlee0925-blip/market-workstation`, created private. Local database, installed dependencies, generated build/tests, and environment files are excluded. A credential-pattern scan of the 23 publishable files found no matching private keys or token patterns; this is a limited check, not a general security audit.
+- Application commit: `92dcd5c5352b92d4ee65fd83e636c01c3dc251fe`. A subsequent documentation-only commit records its ID and these results.
+- A separate clean local clone passed fresh `npm ci`, production build, and all 4 backend tests. Its server started on a separate port, automatically initialized a separate SQLite database, served the built frontend with HTTP 200, and returned a valid AAPL WebSocket snapshot. Git status remained clean after these operations.
+- Backend checks used the already installed Python environment; a fresh Python environment was not reinstalled. This clean-checkout startup check did not establish a new live-provider observation. Earlier live-provider results are documented separately.
+- Remaining submission work: instructor access to the private repository and a real accessible demonstration video link.

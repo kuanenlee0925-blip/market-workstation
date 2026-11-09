@@ -32,7 +32,9 @@ npx.cmd playwright test
 
 Browser checks expect the built application running on port 8000. The default test mocks an unavailable source explicitly. To also test actual Yahoo data, set `$env:LIVE_TEST='1'` before running Playwright; this check can fail if the provider is unavailable.
 
-See [design](docs/design.md), [evidence](docs/evidence.md), [AI disclosure](AI-USE.md), and [submission draft](report.md). The report still needs your repository/commit and accessible 30–60 second video links. This is not yet a submission-ready claim of all assignment features.
+Repository: https://github.com/kuanenlee0925-blip/market-workstation (private; grant the instructor access before submission).
+
+See [design](docs/design.md), [evidence](docs/evidence.md), [AI disclosure](AI-USE.md), and [submission draft](report.md). The report includes the application commit and still needs an accessible 30–60 second video link. This is not yet a submission-ready claim of all assignment features.
 
 ## Sources
 
