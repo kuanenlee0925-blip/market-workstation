@@ -34,7 +34,7 @@ Browser checks expect the built application running on port 8000. The default te
 
 Repository: https://github.com/kuanenlee0925-blip/market-workstation (public; no invitation required).
 
-See [design](docs/design.md), [evidence](docs/evidence.md), [AI disclosure](AI-USE.md), and [submission draft](report.md). The report includes the application commit and still needs an accessible 30–60 second video link. This is not yet a submission-ready claim of all assignment features.
+See [design](docs/design.md), [evidence](docs/evidence.md), [AI disclosure](AI-USE.md), and [Part 1 report](report.md). The report includes the application commit and a public [56-second demonstration](https://github.com/kuanenlee0925-blip/market-workstation/blob/main/docs/demo.mp4). Only `report.md` should be uploaded to Canvas. Remaining implementation and evidence limitations are identified in the report.
 
 ## Sources
 

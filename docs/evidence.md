@@ -41,3 +41,10 @@
 ## Public repository access — November 9, 2026
 
 - The user requested making the repository public. Its visibility was changed to public, and an unauthenticated GitHub API request verified access. README and report access instructions were updated. The demonstration video link remains outstanding.
+
+## Student demonstration recording — November 9, 2026
+
+- The student supplied `Screen Recording 2026-11-09 161013.mp4`. Browser metadata reports a duration of 56.341313 seconds at 1918 × 1020, within the required 30–60 second range.
+- Sampled frames show AAPL replay around 5 seconds, live BTC-USD with a 3-second source age around 15 seconds, MSFT replay around 25 seconds, BTC-USD live data and source details around 35 seconds, and BTC-USD replay around 45–55 seconds. The final sampled frame shows replay advancing into a second candle, increasing observation count, and historical-data age. It is not evidence of a provider outage.
+- `docs/demo.mp4` is a 2.66 MB H.264/AAC copy at 30 fps with the original dimensions and full duration. No scenes were generated, cut, reordered, or accelerated. The original 58.19 MB recording was retained outside the repository. Compressed playback and a frame at 35 seconds were checked locally for legibility.
+- The public video links are included in `report.md`. Recording review does not establish unshown internal database operations or real outage/recovery; separate automated and live-source observations are documented above.
