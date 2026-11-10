@@ -40,4 +40,8 @@ Current production UI screenshots at 1440px and 390px were inspected and saved u
 
 Final local backend rerun: 18 passed. The final SmokeTest also reopened the persisted fixture database after restarting FastAPI with Yahoo disabled, replayed the selected range twice in a new browser, confirmed close 101/volume 11, and verified all 4 stored records remained unchanged. Both the initial integration phase and the post-restart replay phase passed; the optional real-provider test was skipped only in this offline command. Application commit: `100e41df29c335a31fe5f9b98959fedc23b45b46`.
 
+## Updated video verification
+
+The student's new November 10 recording was 89.17 seconds. The report now links a 58.17-second chronological excerpt copy, `docs/demo-2026-11-10.mp4`, at 1916 × 864 and 30 fps. Its metadata and representative edited frames were inspected. See evidence.md for the exact edit intervals. The clip shows source disconnect/unavailability; it does not show selected-range replay or successful feed recovery. Existing automated/live checks above remain separate evidence for those capabilities. No application tests were rerun solely for this media/documentation replacement.
+
 Earlier November 9 observations and the original recording remain documented in evidence.md. They do not establish that newly added controls or fixes appeared in that recording.

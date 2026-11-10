@@ -56,3 +56,10 @@
 - Generated changes: `backend/candles.py`, `feed.py`, `store.py`, `main.py`, Vue controls/adapter, backend/API/lifecycle tests, `scripts/smoke_test.py`, and session/handoff documentation. Reference prompts were preserved under `prompts/`; later stages were not implemented.
 - Current verification, expected values, live-provider observations, and failed/revised approaches are in [verification.md](verification.md). They supersede earlier statements about current limitations while preserving the earlier historical log.
 - The existing student video predates this update. It remains labeled as baseline evidence and does not claim to show the new timeframe/range controls or fixes.
+
+## Updated student recording — November 10, 2026
+
+- Request: “can you use this video and put in the report, also update git repost.” The student supplied `Screen Recording 2026-11-10 144000.mp4` (78,781,697 bytes, 1916 × 864, 30 fps, 89.17 seconds).
+- Review of sampled source frames showed live BTC-USD and changing timeframes, the candle-inspection dropdown, a deliberate Yahoo disconnect with the browser still connected, symbol switching, and a later unavailable-feed state. No UTC range selection, stored replay or successful reconnect recovery was visible in the inspected workflow. These are not claimed as demonstrated in the report.
+- To satisfy the 30–60 second duration limit, the web copy retains source intervals 0–18, 23–43, 58–70, 73–79, and 87–89.17 seconds in that order. Result: `docs/demo-2026-11-10.mp4`, 58.17 seconds, 2,122,324 bytes, H.264/AAC at the original dimensions and frame rate. No action was accelerated or reordered. The source recording and the prior baseline `docs/demo.mp4` were preserved.
+- FFmpeg metadata verified duration/codecs/dimensions. Edited frames at 5, 30, 44 and 57 seconds were visually reviewed; the unavailable-feed result remains visible. This media/documentation update changes no application code and does not establish any unshown replay or database behavior.

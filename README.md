@@ -77,7 +77,7 @@ The browser live check needs the ordinary application running on port 8000. It r
 
 ## Submission and limitations
 
-Upload only [report.md](report.md) to Canvas. It links the public repository, application commit and original [56-second video](https://github.com/kuanenlee0925-blip/market-workstation/blob/main/docs/demo.mp4). That recording predates the new range/timeframe/volume behavior; a replacement demonstrating the updated version is recommended. Do not upload code or ZIPs to Canvas.
+Upload only [report.md](report.md) to Canvas. It links the public repository, application commit and [updated 58-second video](https://github.com/kuanenlee0925-blip/market-workstation/blob/main/docs/demo-2026-11-10.mp4). The November 10 video shows the current UI, live data, timeframe/inspection controls and source disconnect/unavailability. It does not show range selection, stored replay or successful reconnect recovery; the report identifies those gaps. The original baseline demo.mp4 is retained separately. Do not upload code or ZIPs to Canvas.
 
 See [current verification](docs/verification.md), [evidence](docs/evidence.md), [design](docs/design-pipeline.md), and [AI disclosure](AI-USE.md). Quotes are sampled; volume/coverage is not exchange-certified. Recording remains unbounded and aggregation is intended for a small local demonstration. The calendar covers 2000–2035; unsupported/out-of-session equity observations are kept in SQLite but do not form regular-session candles.
 
