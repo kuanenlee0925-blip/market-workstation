@@ -48,3 +48,11 @@
 - Sampled frames show AAPL replay around 5 seconds, live BTC-USD with a 3-second source age around 15 seconds, MSFT replay around 25 seconds, BTC-USD live data and source details around 35 seconds, and BTC-USD replay around 45–55 seconds. The final sampled frame shows replay advancing into a second candle, increasing observation count, and historical-data age. It is not evidence of a provider outage.
 - `docs/demo.mp4` is a 2.66 MB H.264/AAC copy at 30 fps with the original dimensions and full duration. No scenes were generated, cut, reordered, or accelerated. The original 58.19 MB recording was retained outside the repository. Compressed playback and a frame at 35 seconds were checked locally for legibility.
 - The public video links are included in `report.md`. Recording review does not establish unshown internal database operations or real outage/recovery; separate automated and live-source observations are documented above.
+
+## Part 1 prompt alignment — November 10, 2026
+
+- Request: compare the supplied ZIP's prompts with the implementation, then “change it to what the prompt wanted, but still keep my UI/UX design.” The student selected Part 1 only and explicitly approved the exchange-calendars dependency.
+- Reproduced differences using disposable in-memory inputs: unknown/reset volume was zero; two distinct same-timestamp prices collapsed in derived candles; latest-source time did not identify the current late replay arrival. Revised those behaviors without deleting original observations.
+- Generated changes: `backend/candles.py`, `feed.py`, `store.py`, `main.py`, Vue controls/adapter, backend/API/lifecycle tests, `scripts/smoke_test.py`, and session/handoff documentation. Reference prompts were preserved under `prompts/`; later stages were not implemented.
+- Current verification, expected values, live-provider observations, and failed/revised approaches are in [verification.md](verification.md). They supersede earlier statements about current limitations while preserving the earlier historical log.
+- The existing student video predates this update. It remains labeled as baseline evidence and does not claim to show the new timeframe/range controls or fixes.

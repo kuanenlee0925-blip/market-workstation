@@ -8,6 +8,7 @@ charset-normalizer==3.5.2
 click==8.5.1
 colorama==0.4.6
 curl_cffi==0.17.0
+exchange_calendars==4.13.2
 fastapi==0.162.2
 frozendict==2.5.1
 h11==0.16.0
@@ -16,6 +17,7 @@ httptools==0.9.0
 httpx==0.28.1
 idna==3.20
 iniconfig==2.3.1
+korean_lunar_calendar==0.4.0
 multitasking==0.0.13
 numpy==2.5.4
 opentelemetry-api==1.45.2
@@ -29,6 +31,7 @@ pycparser==3.12
 pydantic==2.14.3
 pydantic_core==2.50.4
 Pygments==2.21.0
+pyluach==2.3.0
 pytest==9.2.0
 python-dateutil==4.0.0
 python-dotenv==1.2.4
@@ -37,6 +40,7 @@ PyYAML==6.0.3
 requests==2.34.2
 soupsieve==4.0.1
 starlette==1.10.0
+toolz==1.2.0
 typing-inspection==0.4.5
 typing_extensions==4.16.0
 tzdata==2026.6

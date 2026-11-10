@@ -19,8 +19,4 @@ jobs:
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - run: |
-          python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 &
-          python -c "import time; time.sleep(3)"
-          cd frontend
-          npx playwright test
+      - run: python scripts/smoke_test.py
