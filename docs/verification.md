@@ -28,6 +28,8 @@ Scope: supplied prompts 01–09 including 07A, with the existing UI preserved. R
 
 Before changing the running application, the existing 12,090 observations were backed up locally to an ignored `market.pre-prompts-20261110-141047.sqlite`. Migration adds nullable supersedes links and does not rewrite prior payloads, source/receipt timestamps, digests or sequences. A disposable legacy-schema migration check verifies both same-time rows remain. Old revision ordinals are treated as legacy ordinals, not correction evidence.
 
+After migration and live checks, a direct comparison against that backup found all 12,090 original rows present and zero changed/missing payloads, digests or source/receipt timestamps. A limited credential-pattern scan of the staged source/text files found no matching tokens or private-key patterns.
+
 ## Real-provider observations
 
 The bounded diagnostic after the listening-loop correction received BTC-USD price 73,307.71, source timestamp 1794338054000 milliseconds, receipt timestamp 1794338057.3198414 seconds, and provider day_volume 27405950976. The connection opened and the diagnostic exited normally. This was a separate real Yahoo observation, not a synthetic fixture or a profit claim. The field is a cumulative provider total, not trade size.
@@ -35,5 +37,7 @@ The bounded diagnostic after the listening-loop correction received BTC-USD pric
 The separate live-provider Chromium check subsequently passed: it required a new SQLite receipt after test start, compared the rendered latest BTC-USD price with the saved quote after disconnect, verified Yahoo offline while the browser stayed connected, replayed recorded observations, and reconnected Yahoo. This is a deliberate upstream disconnect/reconnect observation, not an induced unexpected network/provider outage. A prior rerun timed out waiting for the initial chart while the database had a fresh receipt; a separate browser inspection showed valid snapshots and no page errors. The initial chart wait was increased to 15 seconds and the check reran successfully; the exact timing cause was not established.
 
 Current production UI screenshots at 1440px and 390px were inspected and saved under `docs/screenshots/`. The original layout and palette remain, with the extra controls in the toolbar and source panel. The mobile inspection found no page errors or horizontal overflow.
+
+Final local backend rerun: 18 passed. The final SmokeTest also reopened the persisted fixture database after restarting FastAPI with Yahoo disabled, replayed the selected range twice in a new browser, confirmed close 101/volume 11, and verified all 4 stored records remained unchanged. Both the initial integration phase and the post-restart replay phase passed; the optional real-provider test was skipped only in this offline command. Application commit: `100e41df29c335a31fe5f9b98959fedc23b45b46`.
 
 Earlier November 9 observations and the original recording remain documented in evidence.md. They do not establish that newly added controls or fixes appeared in that recording.
