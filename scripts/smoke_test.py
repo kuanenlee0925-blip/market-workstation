@@ -71,7 +71,10 @@ def main():
                 subprocess.run([npm, 'exec', '--', 'playwright', 'test'], cwd=ROOT/'frontend', env=env, check=True)
                 with closing(sqlite3.connect(db)) as conn:
                     before = conn.execute('SELECT sequence,digest FROM observations ORDER BY sequence').fetchall()
-                assert len(before) == 4
+                    ledger_before = {table: conn.execute('SELECT * FROM '+table+' ORDER BY rowid').fetchall() for table in ('paper_accounts', 'paper_orders', 'paper_order_events', 'paper_fills', 'paper_pnl', 'paper_signals', 'backtest_inputs')}
+                assert len(before) >= 4
+                with closing(sqlite3.connect(db)) as conn:
+                    assert conn.execute("SELECT COUNT(*) FROM observations WHERE symbol='AAPL'").fetchone()[0] == 4
                 stop(backend)
                 try:
                     read(base+'/api/health')
@@ -84,9 +87,11 @@ def main():
                 assert read(base+'/api/health') == expected
                 with closing(sqlite3.connect(db)) as conn:
                     assert conn.execute('SELECT sequence,digest FROM observations ORDER BY sequence').fetchall() == before
-                print('PASS: restart recovery and all 4 persisted observations verified', flush=True)
+                    for table, records in ledger_before.items():
+                        assert conn.execute('SELECT * FROM '+table+' ORDER BY rowid').fetchall() == records
+                print('PASS: restart recovery and all persisted observations verified', flush=True)
                 replay_env = dict(env, SMOKE_RESTART='1')
-                subprocess.run([npm, 'exec', '--', 'playwright', 'test', '--grep', 'persisted offline replay'], cwd=ROOT/'frontend', env=replay_env, check=True)
+                subprocess.run([npm, 'exec', '--', 'playwright', 'test', '--grep', 'persisted offline replay|persisted paper account'], cwd=ROOT/'frontend', env=replay_env, check=True)
             except Exception:
                 for name, stream in [('Backend', blog), ('Frontend', flog)]:
                     stream.flush(); stream.seek(0)

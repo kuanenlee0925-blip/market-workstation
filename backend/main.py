@@ -1,5 +1,6 @@
 import asyncio
-from contextlib import asynccontextmanager
+import json
+from contextlib import asynccontextmanager, suppress
 import os
 from pathlib import Path
 import time
@@ -8,24 +9,53 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictInt, Field
 
 from .candles import INTERVALS, aggregate, epoch, iso, sample_minutes
+from .indicators import moving_averages, calculate_indicator, INDICATOR_TYPES
 from .feed import Feed
 from .store import Store
+from .paper import Paper, backtest, reference_events
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+from .chart_agent import ChatRequest, chat, init_chat, read_rules
 
 SYMBOLS = ['AAPL', 'MSFT', 'SPY', 'BTC-USD']
 TEST_MODE = os.getenv('MARKET_TEST_MODE') == '1'
 store = Store(os.getenv('MARKET_DB', 'market.sqlite'))
 feed = Feed(store, SYMBOLS, TEST_MODE)
+init_chat(store)
+paper = Paper(store.db)
+paper_health = {'error': None}
+
+
+def advance_paper():
+    for row in store.db.execute('SELECT id,config FROM paper_accounts').fetchall():
+        config = json.loads(row['config'])
+        if config['source'] == 'live':
+            paper.process(row['id'], store.observations(config['symbol']))
+
+
+async def paper_loop():
+    while True:
+        try:
+            advance_paper()
+            paper_health['error'] = None
+        except Exception as exc:
+            paper_health['error'] = type(exc).__name__
+        await asyncio.sleep(1)
 
 
 @asynccontextmanager
 async def lifespan(app):
     await feed.set_enabled(os.getenv('FEED_ENABLED', '1') != '0')
+    task = asyncio.create_task(paper_loop())
     try:
         yield
     finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
         await feed.stop()
         store.db.close()
 
@@ -87,6 +117,133 @@ async def history(response: Response, symbol: str = 'AAPL', interval: str = '1m'
         raise HTTPException(422, str(exc)) from exc
 
 
+class IndicatorConfig(BaseModel):
+    name: str
+    kind: str
+    window: StrictInt
+
+
+@app.get('/api/indicators')
+async def indicators():
+    return dict(types=INDICATOR_TYPES, instances=[dict(row) for row in store.db.execute('SELECT * FROM indicators ORDER BY id')])
+
+
+@app.post('/api/indicators', status_code=201)
+async def add_indicator(config: IndicatorConfig):
+    try:
+        if not config.name.strip() or len(config.name.strip()) > 80:
+            raise ValueError('Enter a name of at most 80 characters')
+        calculate_indicator([], {}, config.kind, config.window)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    cursor = store.db.execute('INSERT INTO indicators(name, kind, window) VALUES (?, ?, ?)', (config.name.strip(), config.kind, config.window))
+    store.db.commit()
+    return dict(id=cursor.lastrowid, name=config.name.strip(), kind=config.kind, window=config.window)
+
+
+@app.get('/api/chat/status')
+async def chat_status():
+    return dict(configured=bool(os.getenv('OPENAI_API_KEY')), rules=read_rules())
+
+
+@app.post('/api/chat')
+async def chart_chat(command: ChatRequest):
+    try:
+        return await chat(store, command)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+class PaperConfig(BaseModel):
+    symbol: Literal['AAPL', 'MSFT', 'SPY', 'BTC-USD'] = 'AAPL'
+    initial: float = Field(default=1000, gt=0, le=100000000, allow_inf_nan=False)
+    short: StrictInt = Field(default=2, gt=0, le=500)
+    long: StrictInt = Field(default=3, gt=0, le=1000)
+    size: StrictInt = Field(default=4, gt=0, le=1000000)
+    interval: Literal['1m', '5m', '15m', '1h', '1d'] = '1m'
+
+
+class BacktestConfig(PaperConfig):
+    source: Literal['recorded', 'reference'] = 'recorded'
+    start: str | None = None
+    end: str | None = None
+
+
+class PaperOrder(BaseModel):
+    request_id: str = Field(min_length=1, max_length=100)
+    side: Literal['buy', 'sell', 'close']
+    quantity: StrictInt | None = None
+
+
+class StrategyControl(BaseModel):
+    enabled: bool
+
+
+@app.get('/api/paper/accounts')
+async def paper_accounts():
+    return dict(accounts=[dict(id=row['id'], config=paper.load(row['id'])[0]) for row in store.db.execute('SELECT id FROM paper_accounts ORDER BY rowid DESC')], health=paper_health)
+
+
+@app.post('/api/paper/accounts', status_code=201)
+async def create_paper(config: PaperConfig):
+    try:
+        rows = store.observations(config.symbol)
+        identifier = paper.create(**config.model_dump(), last_sequence=rows[-1]['sequence'] if rows else 0)
+        settings, state = paper.load(identifier)
+        bars, metadata = store.candles(config.symbol, interval=config.interval)
+        completed = [b['timestamp'] for b in bars if metadata[b['timestamp']]['complete']]
+        state['completed_through'] = max(completed) if completed else None
+        state['source_watermark'] = max((r['source_time'] for r in rows), default=0)
+        with store.db:
+            paper.save(identifier, state)
+        return paper.view(identifier)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.get('/api/paper/accounts/{identifier}')
+async def paper_account(identifier: str):
+    try:
+        return paper.view(identifier)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@app.post('/api/paper/accounts/{identifier}/orders')
+async def paper_order(identifier: str, command: PaperOrder):
+    try:
+        config, _ = paper.load(identifier)
+        if config['source'] != 'live':
+            raise ValueError('Historical results are immutable; use a paper account for manual orders')
+        paper.submit(identifier, command.request_id, command.side, command.quantity)
+        return paper.view(identifier)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.post('/api/paper/accounts/{identifier}/strategy')
+async def paper_strategy(identifier: str, command: StrategyControl):
+    try:
+        paper.strategy(identifier, command.enabled)
+        return paper.view(identifier)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.post('/api/backtests', status_code=201)
+async def run_backtest(config: BacktestConfig):
+    try:
+        begin, finish = selection(config.interval, config.start, config.end)
+        rows = reference_events() if config.source == 'reference' else store.observations(config.symbol)
+        rows = [r for r in rows if (begin is None or r['received_time'] >= begin) and (finish is None or r['received_time'] < finish)]
+        settings = config.model_dump(exclude={'source', 'start', 'end'})
+        if config.source == 'reference':
+            settings['symbol'] = 'AAPL'
+        return backtest(paper, rows, **settings, source='synthetic reference; not live' if config.source == 'reference' else 'recorded Yahoo arrivals; not live')
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
 @app.websocket('/ws/{symbol}')
 async def socket(ws: WebSocket, symbol: str):
     await ws.accept()
@@ -95,6 +252,7 @@ async def socket(ws: WebSocket, symbol: str):
         return
     replay_rows, index, mode, interval = [], 0, 'live', '1m'
     begin = finish = None
+    short, long = 5, 20
     previous = None
     try:
         while True:
@@ -107,12 +265,15 @@ async def socket(ws: WebSocket, symbol: str):
                     point = dict(sequence=cutoff, source_time=iso(row['source_time']), received_time=iso(clock))
                     index = min(index+1, len(replay_rows))
             state = store.snapshot(symbol, cutoff, clock, interval, begin, finish)
-            if mode == 'sample':
-                state['bars'], state['metadata'] = aggregate(sample_minutes(), 'AAPL', interval, clock, begin, finish)
+            if mode in ('sample', 'reference'):
+                minutes = sample_minutes() if mode == 'sample' else [dict(timestamp=iso(r['source_time']), open=r['price'], high=r['price'], low=r['price'], close=r['price'], volume=None) for r in reference_events()[:7]]
+                state['bars'], state['metadata'] = aggregate(minutes, 'AAPL', interval, clock, begin, finish)
                 state.update(count=0, last_source_time=None, last_received_time=None)
-            state.update(mode=mode, source='synthetic CSV sample; not live' if mode == 'sample' else 'recorded Yahoo observations' if mode == 'replay' else 'Yahoo Finance',
+            state.update(test_mode=TEST_MODE, mode=mode, source='synthetic SMA reference; not live' if mode == 'reference' else 'synthetic CSV sample; not live' if mode == 'sample' else 'recorded Yahoo observations' if mode == 'replay' else 'Yahoo Finance',
                          feed=feed.state.copy(), feed_enabled=feed.enabled, server_time=time.time(), replay_point=point,
                          replay_finished=mode == 'replay' and index >= len(replay_rows), range_start=iso(begin) if begin is not None else None, range_end=iso(finish) if finish is not None else None)
+            state['indicators'] = [dict(**dict(row), values=calculate_indicator(state['bars'], state['metadata'], row['kind'], row['window'])) for row in store.db.execute('SELECT * FROM indicators ORDER BY id')]
+            state['sma'] = moving_averages(state['bars'], state['metadata'], short, long)
             current = {b['timestamp']: b for b in state['bars']}
             if previous is None:
                 packet = dict(type='snapshot', **state)
@@ -126,12 +287,15 @@ async def socket(ws: WebSocket, symbol: str):
                 try:
                     next_mode = command.get('mode', mode)
                     next_interval = command.get('interval', interval)
-                    if next_mode not in ('live', 'replay', 'sample'):
+                    if next_mode not in ('live', 'replay', 'sample', 'reference'):
                         raise ValueError('Invalid view mode')
                     new_begin, new_finish = selection(next_interval, command.get('start'), command.get('end'))
-                    if next_mode == 'sample' and symbol != 'AAPL':
+                    new_short, new_long = command.get('short', short), command.get('long', long)
+                    moving_averages([], {}, new_short, new_long)
+                    if next_mode in ('sample', 'reference') and symbol != 'AAPL':
                         raise ValueError('Synthetic CSV sample is for AAPL; select AAPL first')
                     mode, interval, begin, finish = next_mode, next_interval, new_begin, new_finish
+                    short, long = new_short, new_long
                     if mode == 'replay':
                         rows = store.observations(symbol)
                         selected, relevant = [], set()

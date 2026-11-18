@@ -1,6 +1,6 @@
-# Market Workstation — Part 1
+# Market Workstation — Parts 1 and 2
 
-A localhost Vue + FastAPI + SQLite workstation with Yahoo streaming, candlesticks and volume, recorded replay, higher timeframes and source transparency. The student's dark terminal design is retained. This update covers supplied prompts 01–09 (including 07A). Later trading/AI/voice prompts are reference only. No real orders are placed.
+A localhost Vue + FastAPI + SQLite workstation with Yahoo streaming, candlesticks and volume, recorded replay, higher timeframes and source transparency. The student's dark terminal design is retained. Part 1 covers supplied prompts 01–09 (including 07A). Part 2 adds indicators, simulated accounts and historical backtesting; see docs/part2-design.md. The separately built read-only AI assistant has offline checks and a credit-blocked live attempt; later automated AI trading/voice remain reference only. No real orders are placed.
 
 Repository: https://github.com/kuanenlee0925-blip/market-workstation (public).
 
@@ -77,7 +77,7 @@ The browser live check needs the ordinary application running on port 8000. It r
 
 ## Submission and limitations
 
-Upload only [report.md](report.md) to Canvas. It links the public repository, application commit and [updated 58-second video](https://github.com/kuanenlee0925-blip/market-workstation/blob/main/docs/demo-2026-11-10.mp4). The November 10 video shows the current UI, live data, timeframe/inspection controls and source disconnect/unavailability. It does not show range selection, stored replay or successful reconnect recovery; the report identifies those gaps. The original baseline demo.mp4 is retained separately. Do not upload code or ZIPs to Canvas.
+The current [report.md](report.md) is the Part 2 submission draft. It remains pending student review, a submitted commit and public video-link verification. The earlier [Part 1 report](docs/report-part1-archive.md) and its videos are preserved as historical evidence. Upload only the finalized report.md for the relevant Canvas part; do not upload code or ZIPs.
 
 See [current verification](docs/verification.md), [evidence](docs/evidence.md), [design](docs/design-pipeline.md), and [AI disclosure](AI-USE.md). Quotes are sampled; volume/coverage is not exchange-certified. Recording remains unbounded and aggregation is intended for a small local demonstration. The calendar covers 2000–2035; unsupported/out-of-session equity observations are kept in SQLite but do not form regular-session candles.
 
@@ -86,3 +86,20 @@ See [current verification](docs/verification.md), [evidence](docs/evidence.md), 
 - [yfinance streaming](https://ranaroussi.github.io/yfinance/reference/yfinance.websocket.html) and [usage terms](https://pypi.org/project/yfinance/): independent of Yahoo; research/educational and personal-use data limitations apply.
 - [exchange-calendars](https://github.com/gerrymanoim/exchange_calendars): regular sessions, holidays, early closes and DST.
 - [Lightweight Charts](https://tradingview.github.io/lightweight-charts/docs), by TradingView, Inc. https://www.tradingview.com/. Chart logo and attribution link are retained.
+
+## Part 2 in progress
+
+The chart now has initial short and long SMA controls, calculated in Python over completed candles in the current selected view. Warm-up values are unavailable and confirmed crossovers are marked. Applying settings during replay restarts that replay. A selected range starts calculation at its first displayed candle, so earlier candles are not used for warm-up. The seven-close reference and both arrows have now been checked in the browser; see verification.md. Named indicator instances, simulated accounts and historical backtesting are implemented; see the current Part 2 design and verification sections below.
+
+Named indicator work has started: SMA and rolling range instances can be added from the sidebar and are stored in SQLite. Values use completed candles, price units, and the selected view. The paired SMA now uses the same indicator calculation interface. Named-indicator fixtures have API checks; Part 2 browser coverage focuses on required SMA, account and backtesting features.
+
+## Chart assistant setup
+
+A read-only chart assistant is implemented below the chart, with rule lookup, captured-chart assessment, expandable tool results and New chat. Set a private `OPENAI_API_KEY` in `.env` using `.env.example`, then restart the backend. See [chart-assistant.md](docs/chart-assistant.md). SDK setup and controlled offline checks passed; live model attempts are blocked by API credits (the key is configured). Existing Part 1 Yahoo and replay behavior remain available.
+
+
+## Part 2 operation and submission
+
+Use SMA reference (clearly synthetic) with windows2/3 to inspect the supplied crossover example. The Simulation and backtesting panel below the chart creates separate saved accounts/runs, accepts manual paper orders in Live feed view, enables the SMA strategy on new arrivals and runs backtests over receipt-time ranges. Saved account/run reopens history after refresh. Default1000 cash/4shares is suited to the synthetic reference; recorded BTC examples need enough cash for whole shares (the recorded demo uses100000/1share). No real orders or AI credits are involved. See [Part 2 design](docs/part2-design.md).
+
+The current report.md is the Part 2 submission draft; the prior Part 1 report is preserved in docs/report-part1-archive.md. The 51.84-second docs/part2-demo-2026-11-18.webm is an automated browser recording of labeled synthetic checks and a recorded-Yahoo historical backtest. It does not claim new live provider observations. Submission remains pending student review, commit, publication and unauthenticated link checks.

@@ -18,6 +18,7 @@ class Store:
             price REAL NOT NULL, day_volume REAL, payload TEXT NOT NULL, digest TEXT UNIQUE,
             UNIQUE(identity, revision))''')
         self.db.execute('CREATE INDEX IF NOT EXISTS observations_symbol ON observations(symbol, source_time)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS indicators (id INTEGER PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL, window INTEGER NOT NULL)')
         self.db.commit()
         if 'supersedes' not in {r[1] for r in self.db.execute('PRAGMA table_info(observations)')}:
             self.db.execute('ALTER TABLE observations ADD COLUMN supersedes INTEGER REFERENCES observations(sequence)')

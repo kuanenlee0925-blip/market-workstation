@@ -63,3 +63,15 @@
 - Review of sampled source frames showed live BTC-USD and changing timeframes, the candle-inspection dropdown, a deliberate Yahoo disconnect with the browser still connected, symbol switching, and a later unavailable-feed state. No UTC range selection, stored replay or successful reconnect recovery was visible in the inspected workflow. These are not claimed as demonstrated in the report.
 - To satisfy the 30–60 second duration limit, the web copy retains source intervals 0–18, 23–43, 58–70, 73–79, and 87–89.17 seconds in that order. Result: `docs/demo-2026-11-10.mp4`, 58.17 seconds, 2,122,324 bytes, H.264/AAC at the original dimensions and frame rate. No action was accelerated or reordered. The source recording and the prior baseline `docs/demo.mp4` were preserved.
 - FFmpeg metadata verified duration/codecs/dimensions. Edited frames at 5, 30, 44 and 57 seconds were visually reviewed; the unavailable-feed result remains visible. This media/documentation update changes no application code and does not establish any unshown replay or database behavior.
+
+## Agent UI fixture screenshots — November 17
+
+`docs/screenshots/agent-fixture-desktop.png` and `agent-fixture-mobile.png` are automated browser captures using synthetic CSV chart data and a controlled browser response labeled Fixture. The displayed WAIT/0.44 is a test value, not a live provider result. They demonstrate layout and tool-result UI only. No new submission video or real-provider agent evidence was created.
+
+## Part 2 evidence — November 18, 2026
+
+- docs/screenshots/part2-sma-reference.png, part2-accounting.png and part2-mobile.png: real browser SmokeTest with a visible synthetic test-session banner. Known account ending cash1025/realized25 is fixture evidence.
+- docs/part2-demo-2026-11-18.webm: actual 51.84-second automated browser recording. First scene uses labeled synthetic SMA/reference data; second uses 600 previously recorded Yahoo BTC-USD arrivals with Yahoo disconnected, showing21 fills and a negative historical return. This is not a live-feed or AI demonstration. The raw disposable demo database was cleaned up; summary/orders/fills remain in docs/part2-recorded-result.json.
+- docs/screenshots/part2-video-sma.png and part2-video-performance.png: frames extracted at6s and35s, inspected for both crossover arrows and the recorded backtest result.
+- docs/screenshots/part2-recorded-backtest.png: actual isolated recorded-data backtest UI.
+- The video predates minor input-metadata/test-label text refinements and does not demonstrate all manual trading/restart checks. Those checks are separately documented. Public repository/video access for Part 2 remains pending publication and unauthenticated verification. No new remote GitHub Actions result is claimed from local checks.

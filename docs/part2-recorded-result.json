@@ -1,0 +1,868 @@
+{
+  "description": "Observed backtest of 600 previously recorded Yahoo BTC-USD arrivals; no new live-source or model request",
+  "config": {
+    "symbol": "BTC-USD",
+    "initial": "100000.0",
+    "short": 2,
+    "long": 3,
+    "size": 1,
+    "interval": "1m",
+    "source": "recorded Yahoo arrivals; not live",
+    "created": 1795018247.4215121
+  },
+  "summary": {
+    "cash": 36299.73,
+    "quantity": 1,
+    "average_cost": 62957.76,
+    "realized": -742.51,
+    "unrealized": 14.63,
+    "equity": 99272.12,
+    "return_percent": -0.72788,
+    "max_drawdown_percent": 0.8189017546738389,
+    "fills": 21,
+    "price": 62972.39,
+    "price_time": 1795018200.7467422,
+    "price_source_time": 1795018140,
+    "price_source": "completed candle 2026-11-18T16:09:00Z",
+    "strategy": true
+  },
+  "orders": [
+    {
+      "id": "faa8ad57-2eea-45f5-9e1e-6f6b2e6efa4c",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:08:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795014540.7138658,
+      "after_sequence": 30080,
+      "eligible_source": 1795014540,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795014544.881276,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795014540.7138658,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795014544.881276,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "fc51cab2-ead2-4075-aae1-d61604c54965",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:09:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795014600.7701848,
+      "after_sequence": 30294,
+      "eligible_source": 1795014600,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795014605.426825,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795014600.7701848,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795014605.426825,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "32328055-871a-4ec4-b221-3120b02da174",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:11:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795014721.5022032,
+      "after_sequence": 30743,
+      "eligible_source": 1795014720,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795014727.5846617,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795014721.5022032,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795014727.5846617,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "103a0667-bfd6-44da-bd2a-ff09fc8a187f",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:13:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795014841.4322793,
+      "after_sequence": 31185,
+      "eligible_source": 1795014840,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795014848.108684,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795014841.4322793,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795014848.108684,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "1182de97-6044-47bd-ba12-67f012942ef9",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:14:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795014901.15547,
+      "after_sequence": 31391,
+      "eligible_source": 1795014900,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795014907.813024,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795014901.15547,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795014907.813024,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "cbb29666-36d3-482e-a61c-375cdabce793",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:17:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795015083.2217302,
+      "after_sequence": 32039,
+      "eligible_source": 1795015080,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795015090.0037673,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795015083.2217302,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795015090.0037673,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "e50542d7-cda4-4439-841d-60a6e8701639",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:19:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795015204.9792862,
+      "after_sequence": 32461,
+      "eligible_source": 1795015200,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795015209.120098,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795015204.9792862,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795015209.120098,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "93612a18-726b-4a42-a9c7-97c76e1ec0c3",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:21:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795015320.5094378,
+      "after_sequence": 32880,
+      "eligible_source": 1795015320,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795015326.2876472,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795015320.5094378,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795015326.2876472,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "044721e7-fc8d-479e-be1d-e9450c57a29d",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:28:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795015741.5908327,
+      "after_sequence": 34360,
+      "eligible_source": 1795015740,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795015747.9092624,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795015741.5908327,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795015747.9092624,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "77265239-644c-4009-919e-8848ec3aab70",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:31:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795015922.6092837,
+      "after_sequence": 34994,
+      "eligible_source": 1795015920,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795015928.5800536,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795015922.6092837,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795015928.5800536,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "329c2c3f-b2b9-48c5-acef-0069b1a533d9",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:33:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795016046.0948882,
+      "after_sequence": 35406,
+      "eligible_source": 1795016040,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795016046.3699965,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795016046.0948882,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795016046.3699965,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "850f3eec-dfa4-49cc-a640-e7a35889d4fa",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:36:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795016221.9713516,
+      "after_sequence": 36044,
+      "eligible_source": 1795016220,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795016227.238965,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795016221.9713516,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795016227.238965,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "e8e5abfb-fa40-4fa4-b24b-8cea27d222d7",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:44:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795016709.612534,
+      "after_sequence": 37698,
+      "eligible_source": 1795016700,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795016709.7951415,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795016709.612534,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795016709.7951415,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "48943b4d-1593-468d-9800-f4a9dcc807e0",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:48:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795016954.0354369,
+      "after_sequence": 37992,
+      "eligible_source": 1795016940,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795016954.222406,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795016954.0354369,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795016954.222406,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "af8a8060-109a-41b9-8df6-ebef5dbfae63",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:50:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795017064.3096166,
+      "after_sequence": 38415,
+      "eligible_source": 1795017060,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795017064.5809343,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795017064.3096166,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795017064.5809343,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "ae6f8f63-f736-4a7e-8136-28b7430f29ba",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:52:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795017200.7511244,
+      "after_sequence": 38824,
+      "eligible_source": 1795017180,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795017205.1492283,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795017200.7511244,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795017205.1492283,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "00b3046a-b177-46ad-98bf-85e9aa1ace69",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:54:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795017313.2030702,
+      "after_sequence": 38832,
+      "eligible_source": 1795017300,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795017328.2965126,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795017313.2030702,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795017328.2965126,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "31d1b111-dbac-45ae-91cf-a548ecb3f7ad",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T15:58:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795017550.1339016,
+      "after_sequence": 38848,
+      "eligible_source": 1795017540,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795017564.2721286,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795017550.1339016,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795017564.2721286,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "4dd0e77e-0604-40b1-bbac-63ba12d9edf1",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T16:03:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795017854.5924869,
+      "after_sequence": 38867,
+      "eligible_source": 1795017840,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795017860.5825188,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795017854.5924869,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795017860.5825188,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "61beacb2-2e88-4dc5-bf64-48c5da77d098",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T16:06:00Z",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "requested_quantity": null,
+      "quantity": 1,
+      "submitted": 1795018023.4938614,
+      "after_sequence": 38879,
+      "eligible_source": 1795018020,
+      "origin": "SMA down",
+      "status": "filled",
+      "status_time": 1795018045.9833384,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795018023.4938614,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795018045.9833384,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "58df1258-8bfe-4071-bf35-e866ea4091b3",
+      "account_id": "5279c636-4d5d-4a07-8b3d-a467131a1fa9",
+      "request_id": "sma:2026-11-18T16:08:00Z",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "requested_quantity": 1,
+      "quantity": 1,
+      "submitted": 1795018140.8902252,
+      "after_sequence": 38886,
+      "eligible_source": 1795018140,
+      "origin": "SMA up",
+      "status": "filled",
+      "status_time": 1795018152.7629933,
+      "reason": null,
+      "events": [
+        {
+          "status": "pending",
+          "status_time": 1795018140.8902252,
+          "reason": null
+        },
+        {
+          "status": "filled",
+          "status_time": 1795018152.7629933,
+          "reason": null
+        }
+      ]
+    }
+  ],
+  "fills": [
+    {
+      "id": "94465918-4f4d-48ce-864e-2c808f1cf370",
+      "order_id": "faa8ad57-2eea-45f5-9e1e-6f6b2e6efa4c",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63534.91,
+      "observation_sequence": 30096,
+      "source_time": 1795014543,
+      "executed": 1795014544.881276
+    },
+    {
+      "id": "edbb8f02-eeee-4f55-9fbb-feb371b97a58",
+      "order_id": "fc51cab2-ead2-4075-aae1-d61604c54965",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63502.41,
+      "observation_sequence": 30315,
+      "source_time": 1795014604,
+      "executed": 1795014605.426825
+    },
+    {
+      "id": "07d6e834-7342-465d-9d48-614e42740c3a",
+      "order_id": "32328055-871a-4ec4-b221-3120b02da174",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63545.82,
+      "observation_sequence": 30768,
+      "source_time": 1795014724,
+      "executed": 1795014727.5846617
+    },
+    {
+      "id": "9968093d-77d6-4289-bb60-2b3dae88ad48",
+      "order_id": "103a0667-bfd6-44da-bd2a-ff09fc8a187f",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63556.25,
+      "observation_sequence": 31200,
+      "source_time": 1795014844,
+      "executed": 1795014848.108684
+    },
+    {
+      "id": "1aa24d99-1962-4565-bcdd-c3d8b9b9554e",
+      "order_id": "1182de97-6044-47bd-ba12-67f012942ef9",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63536.58,
+      "observation_sequence": 31417,
+      "source_time": 1795014904,
+      "executed": 1795014907.813024
+    },
+    {
+      "id": "ce4944b8-d6c3-4b3a-b5f5-724ea5e2df67",
+      "order_id": "cbb29666-36d3-482e-a61c-375cdabce793",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63455.91,
+      "observation_sequence": 32059,
+      "source_time": 1795015085,
+      "executed": 1795015090.0037673
+    },
+    {
+      "id": "f0770a8a-b8a4-4823-8f0e-fa711fe6b693",
+      "order_id": "e50542d7-cda4-4439-841d-60a6e8701639",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63597.39,
+      "observation_sequence": 32483,
+      "source_time": 1795015205,
+      "executed": 1795015209.120098
+    },
+    {
+      "id": "31449b3d-04b8-4c2f-ac62-2fdfbb46fb47",
+      "order_id": "93612a18-726b-4a42-a9c7-97c76e1ec0c3",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63514.85,
+      "observation_sequence": 32900,
+      "source_time": 1795015321,
+      "executed": 1795015326.2876472
+    },
+    {
+      "id": "e292f3e8-938e-480c-973a-acadb7e2c687",
+      "order_id": "044721e7-fc8d-479e-be1d-e9450c57a29d",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63490.64,
+      "observation_sequence": 34382,
+      "source_time": 1795015742,
+      "executed": 1795015747.9092624
+    },
+    {
+      "id": "db73ba7e-be42-4896-b455-c23a9ca9b03d",
+      "order_id": "77265239-644c-4009-919e-8848ec3aab70",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63432.95,
+      "observation_sequence": 35013,
+      "source_time": 1795015923,
+      "executed": 1795015928.5800536
+    },
+    {
+      "id": "01d748fa-61a7-4882-95f8-b0c8c5d001c3",
+      "order_id": "329c2c3f-b2b9-48c5-acef-0069b1a533d9",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63518.57,
+      "observation_sequence": 35427,
+      "source_time": 1795016043,
+      "executed": 1795016046.3699965
+    },
+    {
+      "id": "2dfa9665-6ff4-456a-8f5d-89383c6d636c",
+      "order_id": "850f3eec-dfa4-49cc-a640-e7a35889d4fa",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63444.42,
+      "observation_sequence": 36060,
+      "source_time": 1795016223,
+      "executed": 1795016227.238965
+    },
+    {
+      "id": "e2258b02-e542-499b-94b3-4df0cf3eb872",
+      "order_id": "e8e5abfb-fa40-4fa4-b24b-8cea27d222d7",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63198,
+      "observation_sequence": 37718,
+      "source_time": 1795016704,
+      "executed": 1795016709.7951415
+    },
+    {
+      "id": "9937fecf-b308-4c0f-b558-3436bdc02379",
+      "order_id": "48943b4d-1593-468d-9800-f4a9dcc807e0",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 62938,
+      "observation_sequence": 38011,
+      "source_time": 1795016940,
+      "executed": 1795016954.222406
+    },
+    {
+      "id": "9614e414-f849-44d2-a6ee-7f75560438e8",
+      "order_id": "af8a8060-109a-41b9-8df6-ebef5dbfae63",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63136.79,
+      "observation_sequence": 38435,
+      "source_time": 1795017060,
+      "executed": 1795017064.5809343
+    },
+    {
+      "id": "4716b210-4ddb-4c66-aa3a-219f0e66a5a6",
+      "order_id": "ae6f8f63-f736-4a7e-8136-28b7430f29ba",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63048,
+      "observation_sequence": 38825,
+      "source_time": 1795017201,
+      "executed": 1795017205.1492283
+    },
+    {
+      "id": "4d5e582e-051b-47bf-9c19-c2b19f80b425",
+      "order_id": "00b3046a-b177-46ad-98bf-85e9aa1ace69",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 63139.44,
+      "observation_sequence": 38833,
+      "source_time": 1795017326,
+      "executed": 1795017328.2965126
+    },
+    {
+      "id": "8c6be4f0-9401-49d1-ab84-0e239be05ad2",
+      "order_id": "31d1b111-dbac-45ae-91cf-a548ecb3f7ad",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 63061.13,
+      "observation_sequence": 38849,
+      "source_time": 1795017561,
+      "executed": 1795017564.2721286
+    },
+    {
+      "id": "ef45654b-79d1-4c24-95d4-7519598b0469",
+      "order_id": "4dd0e77e-0604-40b1-bbac-63ba12d9edf1",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 62939.57,
+      "observation_sequence": 38868,
+      "source_time": 1795017852,
+      "executed": 1795017860.5825188
+    },
+    {
+      "id": "10f02f79-6c91-441e-b9e0-f46b564af18e",
+      "order_id": "61beacb2-2e88-4dc5-bf64-48c5da77d098",
+      "symbol": "BTC-USD",
+      "side": "close",
+      "quantity": 1,
+      "price": 62941.28,
+      "observation_sequence": 38880,
+      "source_time": 1795018033,
+      "executed": 1795018045.9833384
+    },
+    {
+      "id": "5ed873de-5a80-4b12-94f7-67ea798f1060",
+      "order_id": "58df1258-8bfe-4071-bf35-e866ea4091b3",
+      "symbol": "BTC-USD",
+      "side": "buy",
+      "quantity": 1,
+      "price": 62957.76,
+      "observation_sequence": 38887,
+      "source_time": 1795018147,
+      "executed": 1795018152.7629933
+    }
+  ],
+  "first_signal": {
+    "timestamp": "2026-11-18T15:05:00Z",
+    "short": null,
+    "long": null,
+    "crossover": null,
+    "available_at": 1795014360.0420723,
+    "observation_sequence": 29402
+  },
+  "last_signal": {
+    "timestamp": "2026-11-18T16:09:00Z",
+    "short": 62976.715,
+    "long": 62967.47,
+    "crossover": null,
+    "available_at": 1795018200.7467422,
+    "observation_sequence": 38890
+  }
+}

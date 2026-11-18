@@ -1,0 +1,17 @@
+{
+  "question": "What do the last two completed candles support for this educational chart assessment?",
+  "choices": [
+    {
+      "value": "LONG",
+      "description": "Both completed candles close above their own open."
+    },
+    {
+      "value": "SHORT",
+      "description": "Both completed candles close below their own open."
+    },
+    {
+      "value": "WAIT",
+      "description": "Mixed directions, a flat candle, or unclear, insufficient, or stale evidence."
+    }
+  ]
+}

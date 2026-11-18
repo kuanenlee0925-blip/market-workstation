@@ -1,6 +1,7 @@
 <script setup>
+import PaperPanel from './PaperPanel.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { createChart, CandlestickSeries, HistogramSeries } from 'lightweight-charts'
+import { createChart, CandlestickSeries, HistogramSeries, LineSeries, createSeriesMarkers } from 'lightweight-charts'
 const instruments = [
   { symbol: 'AAPL', name: 'Apple Inc.', icon: 'A', color: '#d8dde6', type: 'NASDAQ · EQUITY' },
   { symbol: 'MSFT', name: 'Microsoft Corporation', icon: '⊞', color: '#70adfa', type: 'NASDAQ · EQUITY' },
@@ -9,8 +10,12 @@ const instruments = [
 ]
 const symbol = ref('AAPL'), state = ref({ bars: [], feed: {} }), connection = ref('connecting')
 const host = ref(), now = ref(Date.now()/1000), search = ref(''), quotes = ref({})
+const chatMessage = ref(''), chatTurns = ref([]), chatBusy = ref(false), chatConfigured = ref(false), assessment = ref(null)
+let conversationId = null, chatGeneration = 0
+const indicatorTypes = ref({}), indicatorName = ref(''), indicatorKind = ref('sma'), indicatorWindow = ref(2)
+const shortWindow = ref(5), longWindow = ref(20)
 const interval = ref('1m'), rangeStart = ref(''), rangeEnd = ref(''), error = ref(''), hoverTime = ref(null)
-let chart, candles, volume, socket, retry, timer, disposed = false
+let chart, candles, volume, shortLine, longLine, markers, socket, retry, timer, disposed = false
 const watchSockets = new Set(), watchRetries = new Set()
 const latest = computed(() => state.value.bars.at(-1))
 const inspected = computed(() => state.value.bars.find(b => b.time === hoverTime.value) || latest.value)
@@ -48,9 +53,39 @@ function merge(previous, packet) {
   const bars = [...records.values()].sort((a,b) => a.timestamp.localeCompare(b.timestamp)).map(b => ({ ...b, time: Date.parse(b.timestamp)/1000, ...metadata[b.timestamp] }))
   return { ...previous, ...packet, bars }
 }
+function assessmentMatches() {
+  return assessment.value && assessment.value.symbol === symbol.value && assessment.value.mode === state.value.mode && assessment.value.viewKey === viewKey()
+}
+function viewKey() { return JSON.stringify([symbol.value, state.value.mode, interval.value, rangeStart.value, rangeEnd.value, state.value.bars]) }
+function newChat() { chatGeneration++; conversationId = null; chatTurns.value = []; assessment.value = null; paint({ type: 'snapshot' }) }
+async function sendChat() {
+  if (!chatMessage.value.trim() || chatBusy.value || !state.value.bars.length) return
+  const generation = chatGeneration, key = viewKey(), message = chatMessage.value
+  markers.setMarkers([])
+  const image = chart.takeScreenshot().toDataURL('image/png')
+  paint({ type: 'snapshot' })
+  const snapshot = { symbol: symbol.value, mode: state.value.mode || 'live', interval: interval.value, chart_time: state.value.bars.at(-1).timestamp, image, bars: state.value.bars, source_time: state.value.last_source_time, receipt_time: state.value.last_received_time }
+  chatBusy.value = true; chatMessage.value = ''
+  try {
+    const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, conversation_id: conversationId, snapshot }) })
+    const result = await response.json()
+    if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Chat request could not be processed')
+    if (generation !== chatGeneration) return
+    conversationId = result.conversation_id
+    chatTurns.value.push({ ...result, message, image, snapshot })
+    if (key === viewKey() && result.assessment?.status === 'ok') assessment.value = { ...result.assessment, viewKey: key }
+    paint({ type: 'snapshot' })
+  } catch (failure) {
+    if (generation === chatGeneration) chatTurns.value.push({ message, reply: failure.message, status: 'error', tools: [] })
+  } finally { chatBusy.value = false }
+}
 function paint(packet) {
   const point = b => ({ time: b.time, open: b.open, high: b.high, low: b.low, close: b.close })
   const histogram = b => b.volume == null ? { time: b.time } : { time: b.time, value: b.volume, color: b.close >= b.open ? '#42bcb54d' : '#ed81554d' }
+  const values = state.value.sma || []
+  const line = key => values.filter(v => v[key] != null).map(v => ({ time: Date.parse(v.timestamp)/1000, value: v[key] }))
+  shortLine.setData(line('short')); longLine.setData(line('long'))
+  markers.setMarkers(values.filter(v => v.crossover).map(v => ({ time: Date.parse(v.timestamp)/1000, position: v.crossover === 'up' ? 'belowBar' : 'aboveBar', color: v.crossover === 'up' ? '#4fc5bd' : '#f18a5b', shape: v.crossover === 'up' ? 'arrowUp' : 'arrowDown', text: `SMA ${v.crossover}` })).concat(assessmentMatches() ? [{ time: Date.parse(assessment.value.chart_time)/1000, position: 'aboveBar', color: '#99c0ff', shape: 'circle', text: `${assessment.value.choice}${assessment.value.probability == null ? '' : ` · ${assessment.value.probability}`}` }] : []).sort((a,b) => a.time-b.time))
   const changed = packet.updates || []
   const lastTime = state.value.bars.at(-1)?.time
   if (packet.type === 'snapshot' || packet.removed?.length || changed.some(b => Date.parse(b.timestamp)/1000 < lastTime)) {
@@ -74,17 +109,17 @@ function connect(nextMode = 'live') {
   clearTimeout(retry)
   if (socket) { socket.onclose = null; socket.close() }
   state.value = { bars: [], feed: {} }; connection.value = 'connecting'; hoverTime.value = null; error.value = ''
-  candles.setData([]); volume.setData([])
+  candles.setData([]); volume.setData([]); shortLine.setData([]); longLine.setData([]); markers.setMarkers([])
   const current = new WebSocket(url(symbol.value)); socket = current
   let fitted = false
-  current.onopen = () => { if (socket === current) { connection.value = 'connected'; if (nextMode !== 'live' || interval.value !== '1m' || rangeStart.value || rangeEnd.value) mode(nextMode) } }
+  current.onopen = () => { if (socket === current) { connection.value = 'connected'; mode(nextMode) } }
   current.onmessage = event => {
     if (socket !== current) return
     const packet = JSON.parse(event.data)
     if (packet.type === 'error') { error.value = packet.message; return }
     state.value = merge(state.value, packet)
     paint(packet)
-    if (!fitted && state.value.bars.length) { chart.timeScale().fitContent(); fitted = true }
+    if ((!fitted || packet.type === 'snapshot') && state.value.bars.length) { chart.timeScale().fitContent(); fitted = true }
   }
   current.onclose = () => { connection.value = 'disconnected'; if (!disposed) retry = setTimeout(() => connect(nextMode), 3000) }
   current.onerror = () => { if (socket === current) connection.value = 'unavailable' }
@@ -92,9 +127,18 @@ function connect(nextMode = 'live') {
 function select(s) { if (s !== symbol.value) { symbol.value = s; connect() } }
 function mode(value) {
   error.value = ''
+  if (!Number.isInteger(Number(shortWindow.value)) || !Number.isInteger(Number(longWindow.value)) || Number(shortWindow.value) <= 0 || Number(shortWindow.value) >= Number(longWindow.value)) { error.value = 'SMA windows must be positive whole numbers, with short smaller than long'; return }
   if (rangeStart.value && rangeEnd.value && rangeStart.value >= rangeEnd.value) { error.value = 'Range end must be after its start'; return }
-  if (value === 'sample' && symbol.value !== 'AAPL') { symbol.value = 'AAPL'; connect('sample'); return }
-  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ mode: value, interval: interval.value, start: rangeStart.value ? `${rangeStart.value}Z` : null, end: rangeEnd.value ? `${rangeEnd.value}Z` : null }))
+  if (['sample', 'reference'].includes(value) && symbol.value !== 'AAPL') { symbol.value = 'AAPL'; connect(value); return }
+  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ mode: value, interval: interval.value, short: Number(shortWindow.value), long: Number(longWindow.value), start: rangeStart.value ? `${rangeStart.value}Z` : null, end: rangeEnd.value ? `${rangeEnd.value}Z` : null }))
+}
+async function addIndicator() {
+  try {
+    const response = await fetch('/api/indicators', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: indicatorName.value, kind: indicatorKind.value, window: Number(indicatorWindow.value) }) })
+    const result = await response.json()
+    if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Enter a valid indicator name and whole-number window')
+    indicatorName.value = ''; error.value = ''
+  } catch (failure) { error.value = failure.message }
 }
 async function toggleFeed() {
   try {
@@ -106,9 +150,14 @@ async function toggleFeed() {
 onMounted(() => {
   chart = createChart(host.value, { autoSize: true, height: 440, layout: { background: { color: '#080d14' }, textColor: '#69788e', fontSize: 10, attributionLogo: true }, grid: { vertLines: { visible: false }, horzLines: { color: '#151d29' } }, timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#202937', rightOffset: 4 }, rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.08 } } })
   candles = chart.addSeries(CandlestickSeries, { upColor: '#4fc5bd', downColor: '#f18a5b', borderVisible: false, wickUpColor: '#4fc5bd', wickDownColor: '#f18a5b' })
+  shortLine = chart.addSeries(LineSeries, { color: '#e8c56e', lineWidth: 2, priceLineVisible: false, lastValueVisible: false })
+  longLine = chart.addSeries(LineSeries, { color: '#ad98ed', lineWidth: 2, priceLineVisible: false, lastValueVisible: false })
+  markers = createSeriesMarkers(candles, [])
   volume = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'volume' }, 1)
   chart.panes()[1].setHeight(75)
   chart.subscribeCrosshairMove(event => hoverTime.value = typeof event.time === 'number' ? event.time : null)
+  fetch('/api/indicators').then(r => r.json()).then(data => indicatorTypes.value = data.types).catch(() => error.value = 'Indicator types unavailable')
+  fetch('/api/chat/status').then(r => r.json()).then(data => chatConfigured.value = data.configured).catch(() => {})
   connect(); instruments.forEach(i => watchMarket(i.symbol))
   timer = setInterval(() => now.value = Date.now()/1000, 1000)
 })
@@ -125,10 +174,11 @@ onUnmounted(() => {
       <nav aria-label="Main navigation"><a href="#workspace" class="active">Workstation</a><a href="#activity">Market activity</a><a href="#source">Connection</a></nav>
       <div class="top-actions"><label class="search"><span>⌕</span><input v-model="search" aria-label="Search markets" placeholder="Search markets" /></label><span class="simulation">Simulation only</span><span class="avatar">MK</span></div>
     </header>
-    <div class="ticker" aria-label="Live market ticker">
+    <div class="ticker" aria-label="Market ticker">
       <button v-for="i in instruments" :key="i.symbol" @click="select(i.symbol)"><span class="ticker-dot" :style="{ background: i.color }"></span><b>{{ i.symbol }}</b><span>{{ price(quotes[i.symbol]?.bars?.at(-1)?.close) }}</span><span :class="direction(change(quotes[i.symbol]))">{{ percent(change(quotes[i.symbol])) }}</span></button>
       <span class="ticker-label">CHANGE SINCE FIRST RECORDED BAR</span>
     </div>
+    <p v-if="state.test_mode" class="view-warning">TEST SESSION · injected synthetic fixtures · not live provider evidence</p>
     <div id="workspace" class="desk-grid">
       <aside class="watchlist">
         <div class="section-heading"><h2>Watchlist</h2><span class="counter">04</span></div>
@@ -139,16 +189,25 @@ onUnmounted(() => {
           <span class="watch-value"><b>{{ price(quotes[i.symbol]?.bars?.at(-1)?.close) }}</b><small :class="direction(change(quotes[i.symbol]))">{{ percent(change(quotes[i.symbol])) }}</small></span>
         </button>
         <p v-if="!filtered.length" class="watch-empty">No matching markets.</p>
-        <div class="watch-bottom"><span class="live-dot"></span> YAHOO FINANCE<span class="watch-caption">Live watchlist · USD<br>Changes cover recorded data, not a trading day.</span></div>
+        <div class="watch-bottom"><span class="live-dot"></span> YAHOO FINANCE<span class="watch-caption">Yahoo watchlist · USD<br>Changes cover recorded data, not a trading day.</span></div>
       </aside>
       <main class="center">
         <section class="chart-panel" aria-label="Market chart">
           <div class="instrument-heading"><span class="coin large" :style="{ color: instrument.color, background: `${instrument.color}15` }">{{ instrument.icon }}</span><h1>{{ instrument.name }}</h1><span class="exchange">{{ instrument.type }}</span><span class="currency">USD</span></div>
           <div class="quote"><strong>{{ price(latest?.close) }}</strong><span class="quote-change" :class="direction(stats.change)">{{ percent(stats.change) }} <small>recorded period</small></span><span class="quote-symbol">{{ symbol }}</span></div>
-          <div class="chart-toolbar"><div class="modes"><button :class="{ selected: state.mode !== 'replay' }" @click="mode('live')">Live feed</button><button :class="{ selected: state.mode === 'replay' }" @click="mode('replay')">Replay stored</button></div><span class="toolbar-divider"></span><select aria-label="Chart timeframe" v-model="interval" @change="mode(state.mode || 'live')"><option v-for="frame in ['1m','5m','15m','1h','1d']" :key="frame">{{ frame }}</option></select><span class="chart-style">Candles + volume</span><button class="fit-button" @click="chart.timeScale().fitContent()">↔ Fit chart</button><select aria-label="Market symbol" v-model="symbol" @change="connect()"><option v-for="i in instruments" :key="i.symbol">{{ i.symbol }}</option></select></div>
-          <div class="ohlc" aria-label="Candle details"><span>{{ candleTime(inspected?.time) }}</span><span>O <b>{{ price(inspected?.open) }}</b></span><span>H <b>{{ price(inspected?.high) }}</b></span><span>L <b>{{ price(inspected?.low) }}</b></span><span data-testid="inspected-close">C <b>{{ price(inspected?.close) }}</b></span><span data-testid="inspected-volume">V <b>{{ volumeText(inspected?.volume) }}</b></span><span v-if="inspected" class="dim">Coverage {{ inspected.observed_minutes }}/{{ inspected.expected_minutes }} minutes</span><span class="bar-status">{{ latest ? (latest.complete ? '● Complete' : '◌ Provisional candle') : 'Awaiting data' }}</span></div>
-          <div class="selection-controls"><label>From · UTC<input type="datetime-local" aria-label="Replay range start UTC" v-model="rangeStart" /></label><label>To · UTC (exclusive)<input type="datetime-local" aria-label="Replay range end UTC" v-model="rangeEnd" /></label><button @click="mode(state.mode || 'live')">Apply range</button><button @click="rangeStart=''; rangeEnd=''; mode(state.mode || 'live')">Clear range</button><button @click="mode('sample')">CSV sample</button><label>Inspect candle<select aria-label="Inspect candle" v-model="hoverTime"><option :value="null">Latest candle</option><option v-for="b in state.bars" :key="b.timestamp" :value="b.time">{{ b.timestamp }}</option></select></label></div><p v-if="error" role="alert" class="view-warning">{{ error }}</p><p v-if="state.mode === 'sample'" class="view-warning">Synthetic CSV sample · November 9, 2026 · not live market data</p><p v-if="state.replay_point" class="replay-clock">REPLAY OBSERVATION #{{ state.replay_point.sequence }} · Source {{ state.replay_point.source_time }} · Received {{ state.replay_point.received_time }}</p><div class="chart-wrap"><div ref="host" class="chart"></div><div v-if="!state.bars.length" class="empty"><span class="empty-icon">⌁</span><strong>{{ state.mode === 'replay' ? 'No recorded observations in this range' : 'Waiting for market observations' }}</strong><span>Live quotes are saved automatically as they arrive.</span><span>Try BTC-USD when the stock market is closed.</span></div></div>
-          <div class="chart-foot"><span><span class="live-dot" :class="{ offline: connection !== 'connected' }"></span>{{ state.mode === 'sample' ? 'Synthetic CSV sample' : state.mode === 'replay' ? 'Recorded replay' : 'Live' }} <span class="dim">/ {{ interval }} BARS</span></span><span>Source age <b>{{ age }}</b> <span class="separator">|</span> UTC {{ clock(now) }}</span></div>
+          <div class="chart-toolbar"><div class="modes"><button :class="{ selected: state.mode === 'live' }" @click="mode('live')">Live feed</button><button :class="{ selected: state.mode === 'replay' }" @click="mode('replay')">Replay stored</button></div><span class="toolbar-divider"></span><select aria-label="Chart timeframe" v-model="interval" @change="mode(state.mode || 'live')"><option v-for="frame in ['1m','5m','15m','1h','1d']" :key="frame">{{ frame }}</option></select><span class="chart-style">Candles + volume</span><button class="fit-button" @click="chart.timeScale().fitContent()">↔ Fit chart</button><select aria-label="Market symbol" v-model="symbol" @change="connect()"><option v-for="i in instruments" :key="i.symbol">{{ i.symbol }}</option></select></div>
+          <div class="ohlc" aria-label="Candle details"><span>{{ candleTime(inspected?.time) }}</span><span>O <b>{{ price(inspected?.open) }}</b></span><span>H <b>{{ price(inspected?.high) }}</b></span><span>L <b>{{ price(inspected?.low) }}</b></span><span data-testid="inspected-close">C <b>{{ price(inspected?.close) }}</b></span><span data-testid="inspected-volume">V <b>{{ volumeText(inspected?.volume) }}</b></span><span v-if="inspected" class="dim">Coverage {{ inspected.observed_minutes }}/{{ inspected.expected_minutes }} minutes</span><span v-if="inspected" class="dim">SMA {{ shortWindow }}: {{ price(state.sma?.find(v => v.timestamp === inspected.timestamp)?.short) }} · SMA {{ longWindow }}: {{ price(state.sma?.find(v => v.timestamp === inspected.timestamp)?.long) }}</span><span class="bar-status">{{ latest ? (latest.complete ? '● Complete' : '◌ Provisional candle') : 'Awaiting data' }}</span></div>
+          <div class="selection-controls"><label>Short SMA<input type="number" min="1" step="1" v-model.number="shortWindow" aria-label="Short SMA window" /></label><label>Long SMA<input type="number" min="1" step="1" v-model.number="longWindow" aria-label="Long SMA window" /></label><button @click="mode(state.mode || 'live')">Apply SMA</button><label>From · UTC<input type="datetime-local" aria-label="Replay range start UTC" v-model="rangeStart" /></label><label>To · UTC (exclusive)<input type="datetime-local" aria-label="Replay range end UTC" v-model="rangeEnd" /></label><button @click="mode(state.mode || 'live')">Apply range</button><button @click="rangeStart=''; rangeEnd=''; mode(state.mode || 'live')">Clear range</button><button @click="mode('sample')">CSV sample</button><button @click="mode('reference')">SMA reference</button><label>Inspect candle<select aria-label="Inspect candle" v-model="hoverTime"><option :value="null">Latest candle</option><option v-for="b in state.bars" :key="b.timestamp" :value="b.time">{{ b.timestamp }}</option></select></label></div><p v-if="error" role="alert" class="view-warning">{{ error }}</p><p v-if="state.mode === 'reference'" class="view-warning">Synthetic SMA reference · seven completed candles · not live market data</p><p v-if="state.mode === 'sample'" class="view-warning">Synthetic CSV sample · November 9, 2026 · not live market data</p><p v-if="state.replay_point" class="replay-clock">REPLAY OBSERVATION #{{ state.replay_point.sequence }} · Source {{ state.replay_point.source_time }} · Received {{ state.replay_point.received_time }}</p><div class="chart-wrap"><div ref="host" class="chart"></div><div v-if="!state.bars.length" class="empty"><span class="empty-icon">⌁</span><strong>{{ state.mode === 'replay' ? 'No recorded observations in this range' : 'Waiting for market observations' }}</strong><span>Live quotes are saved automatically as they arrive.</span><span>Try BTC-USD when the stock market is closed.</span></div></div>
+          <div class="chart-foot"><span><span class="live-dot" :class="{ offline: connection !== 'connected' }"></span>{{ state.mode === 'reference' ? 'Synthetic SMA reference' : state.mode === 'sample' ? 'Synthetic CSV sample' : state.mode === 'replay' ? 'Recorded replay' : state.test_mode ? 'Synthetic test arrivals' : 'Yahoo view' }} <span class="dim">/ {{ interval }} BARS</span></span><span>Source age <b>{{ age }}</b> <span class="separator">|</span> UTC {{ clock(now) }}</span></div>
+        </section>
+        <PaperPanel :symbol="symbol" :interval="interval" :mode="state.mode" :test-mode="state.test_mode" />
+        <section class="chart-assistant" aria-label="Chart assistant">
+          <div class="section-heading"><h2>◈ Chart assistant <span class="tiny-badge">Analysis only</span></h2><button class="fit-button" @click="newChat">New chat</button></div>
+          <p class="micro">Ask about LONG, SHORT or WAIT, assess this chart, or compare assessments. Chart context is captured when you send.</p>
+          <p v-if="!chatConfigured" class="source-note">Connect your backend OpenAI API key to start chatting.</p>
+          <div v-if="assessmentMatches()" class="assessment-result" data-testid="chart-assessment">{{ assessment.symbol }} · {{ assessment.mode }} · {{ assessment.chart_time }}<br><b>{{ assessment.choice }}</b> · Probability {{ assessment.probability == null ? 'unavailable' : assessment.probability }}<small>Choice confidence; not the probability of a profitable trade.</small></div>
+          <div class="chat-log" aria-live="polite"><article v-for="(turn, index) in chatTurns" :key="index" class="chat-turn"><p class="chat-question">{{ turn.message }}</p><p :class="{ down: turn.status === 'error' }">{{ turn.reply }}</p><details v-if="turn.tools?.length"><summary>Tool calls ({{ turn.tools.length }})</summary><div v-for="(tool, i) in turn.tools" :key="i"><b>{{ tool.name }}</b><pre>{{ JSON.stringify(tool.result, null, 2) }}</pre></div></details><details v-if="turn.image"><summary>Captured chart · {{ turn.snapshot.symbol }} · {{ turn.snapshot.mode }} · {{ turn.snapshot.chart_time }}</summary><img :src="turn.image" alt="Chart captured when this message was sent" /></details></article></div>
+          <form @submit.prevent="sendChat" class="chat-compose"><label for="chart-question">Your question</label><textarea id="chart-question" v-model="chatMessage" rows="2" maxlength="4000" placeholder="What does WAIT mean in this app?" /><button class="feed-toggle" :disabled="chatBusy || !chatMessage.trim() || !state.bars.length">{{ chatBusy ? 'Assessing…' : 'Send' }}</button></form>
         </section>
         <section id="activity" class="activity-section"><div class="section-heading"><h2>Market activity</h2><span class="dim">{{ symbol }} · RECORDED {{ interval }} BARS</span></div><div class="activity-cards"><article v-for="bar in recent" :key="bar.time" class="activity-card"><div class="card-heading"><span class="activity-icon" :class="bar.close >= bar.open ? 'up' : 'down'">{{ bar.close >= bar.open ? '↗' : '↘' }}</span><b>{{ clock(bar.time).slice(0,5) }} UTC</b><span class="tiny-badge">{{ bar.complete ? 'Complete' : 'Forming' }}</span></div><h3>{{ bar.close >= bar.open ? 'Close at or above open' : 'Price moved lower' }}</h3><p>Observed range {{ price(bar.low) }}–{{ price(bar.high) }}. Close {{ price(bar.close) }}.</p><div class="card-footer"><span>Volume Δ {{ volumeText(bar.volume) }}</span><span :class="bar.close >= bar.open ? 'up' : 'down'">{{ percent((bar.close/bar.open-1)*100) }}</span></div></article><div v-if="!recent.length" class="activity-placeholder">Recorded candle summaries will appear when observations arrive.</div></div></section>
         <div class="desk-note"><span>◈</span><p><b>Your market, in context.</b> Candles summarize received quotes. Volume is an observed cumulative delta; gaps can affect coverage.</p><a href="#source">View source details ↗</a></div>
@@ -156,10 +215,11 @@ onUnmounted(() => {
       <aside class="details">
         <section class="detail-section"><div class="section-heading"><h2>Recorded performance</h2><span class="dim">↗</span></div><div class="metric-cards"><div class="metric-card"><span>First open</span><strong>{{ price(stats.open) }}</strong><svg viewBox="0 0 100 36" aria-hidden="true"><polyline :points="spark(state)" /></svg></div><div class="metric-card"><span>Latest close</span><strong>{{ price(latest?.close) }}</strong><span :class="direction(stats.change)" class="metric-change">{{ percent(stats.change) }}</span></div></div><p class="micro">Based on this view’s recorded period.</p></section>
         <section class="detail-section"><div class="section-heading"><h2>Price range</h2><span class="tiny-badge">Observed</span></div><div class="range-price"><strong>{{ price(stats.low) }}</strong><strong>{{ price(stats.high) }}</strong></div><div class="range-track"><span v-if="latest" :style="{ left: `${stats.position}%` }"></span></div><div class="range-labels"><span>Recorded low</span><span>Recorded high</span></div><dl class="market-stats"><div><dt>Candle bars</dt><dd>{{ state.bars.length }}</dd></div><div><dt>Observed volume Δ</dt><dd>{{ volumeText(stats.volume) }}</dd></div><div><dt>Stored observations</dt><dd>{{ compact(state.count || 0) }}</dd></div></dl></section>
-        <section id="source" class="detail-section"><div class="section-heading"><h2>Source transparency</h2><span class="status" :class="state.feed.status">● {{ state.feed.status || 'connecting' }}</span></div><dl><div><dt>Provider</dt><dd>{{ state.mode === 'sample' ? 'Synthetic CSV sample' : 'Yahoo Finance' }}</dd></div><div><dt>Browser socket</dt><dd>{{ connection }}</dd></div><div><dt>Source data age</dt><dd :class="{ down: Number.parseInt(age) > 60 }">{{ age }}</dd></div><div><dt>Source time · UTC</dt><dd>{{ clock(state.last_source_time) }}</dd></div><div><dt>Receipt time · UTC</dt><dd>{{ clock(state.last_received_time) }}</dd></div></dl><p class="source-note">{{ state.feed.detail || 'Connecting to the local backend…' }}</p><p v-if="state.replay_finished" class="source-note">Replay complete. Select Live feed to resume.</p><p v-if="Number.parseInt(age) > 60" class="source-note warning">{{ state.mode === 'replay' ? 'Historical replay: age is measured from the recorded source time.' : 'Quotes are over one minute old. The source may be quiet or delayed.' }}</p></section>
-        <section class="session-panel"><button class="feed-toggle" @click="toggleFeed">{{ state.feed_enabled ? 'Disconnect Yahoo' : 'Reconnect Yahoo' }}</button><span class="session-icon">◷</span><div><b>{{ state.mode === 'sample' ? 'Synthetic sample' : 'Local session' }}</b><p>{{ state.feed_enabled ? 'Recording Yahoo to SQLite' : 'Yahoo disconnected; replay available' }}<br>All trading remains simulated.</p></div></section>
+        <section class="detail-section"><div class="section-heading"><h2>Indicators</h2></div><div class="selection-controls"><label>Type<select v-model="indicatorKind" aria-label="Indicator type"><option v-for="(type, key) in indicatorTypes" :key="key" :value="key">{{ type.label }}</option></select></label><label>Name<input v-model="indicatorName" aria-label="Indicator name" /></label><label>Window<input type="number" min="1" step="1" v-model.number="indicatorWindow" aria-label="Indicator window" /></label><button @click="addIndicator">Add indicator</button></div><dl><div v-for="item in state.indicators || []" :key="item.id"><dt>{{ item.name }} · {{ item.window }}</dt><dd>{{ price(item.values.find(v => v.timestamp === inspected?.timestamp)?.value) }}</dd></div></dl><p class="micro">Values use completed candles in the selected view.</p></section>
+        <section id="source" class="detail-section"><div class="section-heading"><h2>Source transparency</h2><span class="status" :class="state.feed.status">● {{ state.feed.status || 'connecting' }}</span></div><dl><div><dt>Provider</dt><dd>{{ state.mode === 'reference' ? 'Synthetic SMA reference' : state.mode === 'sample' ? 'Synthetic CSV sample' : state.test_mode ? 'Injected synthetic fixtures' : 'Yahoo Finance' }}</dd></div><div><dt>Browser socket</dt><dd>{{ connection }}</dd></div><div><dt>Source data age</dt><dd :class="{ down: Number.parseInt(age) > 60 }">{{ age }}</dd></div><div><dt>Source time · UTC</dt><dd>{{ clock(state.last_source_time) }}</dd></div><div><dt>Receipt time · UTC</dt><dd>{{ clock(state.last_received_time) }}</dd></div></dl><p class="source-note">{{ state.feed.detail || 'Connecting to the local backend…' }}</p><p v-if="state.replay_finished" class="source-note">Replay complete. Select Live feed to resume.</p><p v-if="Number.parseInt(age) > 60" class="source-note warning">{{ state.mode === 'replay' ? 'Historical replay: age is measured from the recorded source time.' : 'Quotes are over one minute old. The source may be quiet or delayed.' }}</p></section>
+        <section class="session-panel"><button class="feed-toggle" @click="toggleFeed">{{ state.feed_enabled ? 'Disconnect Yahoo' : 'Reconnect Yahoo' }}</button><span class="session-icon">◷</span><div><b>{{ ['sample','reference'].includes(state.mode) ? 'Synthetic sample' : 'Local session' }}</b><p>{{ state.feed_enabled ? 'Recording Yahoo to SQLite' : 'Yahoo disconnected; replay available' }}<br>All trading remains simulated.</p></div></section>
       </aside>
     </div>
-    <footer><span><span class="live-dot" :class="{ offline: connection !== 'connected' }"></span> LOCAL WORKSTATION <span class="separator">/</span> <span class="dim">{{ state.mode === 'replay' ? 'REPLAY' : 'LIVE VIEW' }}</span></span><a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Charts by TradingView Lightweight Charts™ ↗</a><span class="dim">SIMULATED ENVIRONMENT</span></footer>
+    <footer><span><span class="live-dot" :class="{ offline: connection !== 'connected' }"></span> LOCAL WORKSTATION <span class="separator">/</span> <span class="dim">{{ ['sample','reference'].includes(state.mode) ? 'SYNTHETIC FIXTURE' : state.mode === 'replay' ? 'REPLAY' : 'LIVE VIEW' }}</span></span><a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Charts by TradingView Lightweight Charts™ ↗</a><span class="dim">SIMULATED ENVIRONMENT</span></footer>
   </div>
 </template>
